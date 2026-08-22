@@ -12,8 +12,12 @@ Module.register('MMM-syslog',{
 	messages: [],
 
 	defaults: {
-		max: 5,
+		max: 20,
+		title: "Notifications",
 		format: false,
+		error_color: "yellow",
+		warning_color: "cyan",
+		info_color: "green",
 		types: {
 			INFO: "dimmed",
 			WARNING: "normal",
@@ -24,8 +28,41 @@ Module.register('MMM-syslog',{
 			WARNING: "exclamation",
 			ERROR: "exclamation-triangle"
 		},
+		customEvents: [],
 		shortenMessage: false,
     alert: true
+	},
+
+	getTypeColor: function(type) {
+		if (type === "ERROR") {
+			return this.config.error_color;
+		}
+		if (type === "WARNING") {
+			return this.config.warning_color;
+		}
+		if (type === "INFO") {
+			return this.config.info_color;
+		}
+		return null;
+	},
+
+	findCustomEvent: function(message) {
+		if (!Array.isArray(this.config.customEvents) || typeof message !== "string") {
+			return null;
+		}
+
+		for (var i = 0; i < this.config.customEvents.length; i++) {
+			var eventConfig = this.config.customEvents[i];
+			if (!eventConfig || typeof eventConfig.keyword !== "string") {
+				continue;
+			}
+
+			if (message.toLowerCase().includes(eventConfig.keyword.toLowerCase())) {
+				return eventConfig;
+			}
+		}
+
+		return null;
 	},
 
 	getStyles: function () {
@@ -74,11 +111,22 @@ Module.register('MMM-syslog',{
 			//Create callWrapper
 			var callWrapper = document.createElement("tr");
 			callWrapper.classList.add("normal");
+			var customEvent = this.findCustomEvent(this.messages[i].message);
+			var typeColor = this.getTypeColor(this.messages[i].type);
+			var eventColor = customEvent && customEvent.color ? customEvent.color : null;
+			var textColor = eventColor || typeColor;
 
 			var iconCell = document.createElement("td");
 			var icon =  document.createElement("i");
-			if(this.config.icons.hasOwnProperty(this.messages[i].type)){
-				icon.classList.add("fa", "fa-fw", "fa-" + this.config.icons[this.messages[i].type]);
+			var iconName = null;
+			if (customEvent && customEvent.symbol) {
+				iconName = customEvent.symbol;
+			} else if(this.config.icons.hasOwnProperty(this.messages[i].type)){
+				iconName = this.config.icons[this.messages[i].type];
+			}
+
+			if (iconName) {
+				icon.classList.add("fa", "fa-fw", "fa-" + iconName);
 			}
 			else {
 				icon.classList.add("fa", "fa-fw", "fa-question");
@@ -88,6 +136,9 @@ Module.register('MMM-syslog',{
 			}
 
 			iconCell.classList.add("small");
+			if (textColor) {
+				icon.style.color = textColor;
+			}
 
 			iconCell.appendChild(icon);
 			callWrapper.appendChild(iconCell);
@@ -102,6 +153,9 @@ Module.register('MMM-syslog',{
 			caller.classList.add("title", "small", "align-left");
 			if(this.config.types.hasOwnProperty(this.messages[i].type)){
 				caller.classList.add(this.config.types[this.messages[i].type]);
+			}
+			if (textColor) {
+				caller.style.color = textColor;
 			}
 			callWrapper.appendChild(caller);
 
