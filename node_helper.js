@@ -13,11 +13,26 @@ const fs = require("fs");
 
 module.exports = NodeHelper.create({
 
+	decodeMessage: function(message) {
+		if (typeof message !== "string") {
+			return message;
+		}
+
+		// Repair common mojibake when UTF-8 bytes were interpreted as Latin-1.
+		const repaired = Buffer.from(message, "latin1").toString("utf8");
+		if (repaired.includes("\uFFFD")) {
+			return message;
+		}
+
+		const looksLikeMojibake = /[ÃÂâ]|ï¸/.test(message);
+		return looksLikeMojibake ? repaired : message;
+	},
+
 	start: function() {
 		this.expressApp.get('/syslog', (req, res) => {
 
 			var query = url.parse(req.url, true).query;
-			var message = query.message;
+			var message = this.decodeMessage(query.message);
 			var type = query.type;
       var silent = query.silent || false;
 
