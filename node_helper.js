@@ -24,7 +24,8 @@ module.exports = NodeHelper.create({
 			return message;
 		}
 
-		const looksLikeMojibake = /[ÃÂâ]|ï¸/.test(message);
+		// Includes common broken UTF-8 markers for emoji and non-Latin scripts.
+		const looksLikeMojibake = /[ÃÂâðÐÑ]|ï¸/.test(message);
 		return looksLikeMojibake ? repaired : message;
 	},
 
