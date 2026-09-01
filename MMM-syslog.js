@@ -102,7 +102,7 @@ Module.register('MMM-syslog',{
 		var wrapper = document.createElement("div");
 		if(this.config.title !== false){
 			var title = document.createElement("header");
-			title.innerHTML = this.config.title || this.name;
+			title.textContent = this.config.title || this.name;
 			wrapper.appendChild(title);
 		}
 		var logs = document.createElement("table");
@@ -149,7 +149,7 @@ Module.register('MMM-syslog',{
 			}
 			//Set caller of row
 			var caller =  document.createElement("td");
-			caller.innerHTML = " " + message;
+			caller.textContent = " " + message;
 			caller.classList.add("title", "small", "align-left");
 			if(this.config.types.hasOwnProperty(this.messages[i].type)){
 				caller.classList.add(this.config.types[this.messages[i].type]);
@@ -161,7 +161,7 @@ Module.register('MMM-syslog',{
 
 			//Set time of row
 			var time =  document.createElement("td");
-			time.innerHTML = this.config.format ? moment(this.messages[i].timestamp).format(this.config.format) : moment(this.messages[i].timestamp).fromNow();
+			time.textContent = this.config.format ? moment(this.messages[i].timestamp).format(this.config.format) : moment(this.messages[i].timestamp).fromNow();
 			time.classList.add("time", "light", "xsmall");
 			callWrapper.appendChild(time);
 

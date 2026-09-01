@@ -18,15 +18,14 @@ module.exports = NodeHelper.create({
 			return message;
 		}
 
-		// Repair common mojibake when UTF-8 bytes were interpreted as Latin-1.
-		const repaired = Buffer.from(message, "latin1").toString("utf8");
-		if (repaired.includes("\uFFFD")) {
+		// Preserve valid Unicode text and emoji. Only repair obvious mojibake patterns.
+		const looksLikeMojibake = /[ÃÂâðÐÑ]|ï¸/.test(message);
+		if (!looksLikeMojibake) {
 			return message;
 		}
 
-		// Includes common broken UTF-8 markers for emoji and non-Latin scripts.
-		const looksLikeMojibake = /[ÃÂâðÐÑ]|ï¸/.test(message);
-		return looksLikeMojibake ? repaired : message;
+		const repaired = Buffer.from(message, "latin1").toString("utf8");
+		return repaired.includes("\uFFFD") ? message : repaired;
 	},
 
 	start: function() {
