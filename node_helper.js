@@ -32,8 +32,9 @@ module.exports = NodeHelper.create({
 		this.expressApp.get('/syslog', (req, res) => {
 
 			var query = url.parse(req.url, true).query;
-			var message = this.decodeMessage(query.message);
-			var type = query.type;
+			var message = query.message ? decodeURIComponent(query.message) : null;
+			message = this.decodeMessage(message);
+			var type = query.type ? decodeURIComponent(query.type) : null;
       var silent = query.silent || false;
 
 			if (message == null && type == null){
